@@ -1,0 +1,51 @@
+{
+  "title": {
+    "max_length": 200,
+    "max_words": 100,
+    "min_length": 1,
+    "checks": [
+      { "name": "trailing_whitespace", "severity": "warning" },
+      { "name": "multiple_spaces", "severity": "warning" },
+      { "name": "all_caps", "severity": "warning" },
+      { "name": "leading_trailing_punctuation", "severity": "warning" }
+    ]
+  },
+  "subtitle": {
+    "max_length": 200,
+    "checks": [
+      { "name": "trailing_whitespace", "severity": "warning" },
+      { "name": "multiple_spaces", "severity": "warning" },
+      { "name": "all_caps", "severity": "warning" }
+    ]
+  },
+  "description": {
+    "max_length": 4000,
+    "checks": [
+      { "name": "trailing_whitespace", "severity": "warning" },
+      { "name": "multiple_spaces", "severity": "warning" },
+      { "name": "raw_html_tags", "severity": "warning" },
+      { "name": "empty_paragraphs", "severity": "warning" }
+    ]
+  },
+  "categories": {
+    "max_count": 3,
+    "max_length_per": 120,
+    "checks": [
+      { "name": "empty_items", "severity": "warning" },
+      { "name": "duplicates", "severity": "warning" },
+      { "name": "trailing_whitespace", "severity": "warning" }
+    ]
+  },
+  "keywords": {
+    "max_count": 7,
+    "max_total_bytes": 500,
+    "max_length_per": 50,
+    "checks": [
+      { "name": "empty_items", "severity": "warning" },
+      { "name": "duplicates", "severity": "warning" },
+      { "name": "trailing_whitespace", "severity": "warning" },
+      { "name": "repeated_words", "severity": "warning" },
+      { "name": "asin_like", "severity": "warning" }
+    ]
+  }
+}

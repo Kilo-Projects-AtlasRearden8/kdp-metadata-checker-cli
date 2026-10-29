@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kdp-metadata-checker"
+version = "0.1.0"
+description = "Local-first CLI that checks KDP book metadata for common issues and length limits."
+requires-python = ">=3.10"
+authors = [{ name = "Asdale Dynamics, LLC" }]
+license = { text = "MIT" }
+readme = "README.md"
+
+[project.scripts]
+kdp-metadata-check = "kdp_metadata_checker.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["kdp_metadata_checker*"]
+
+[tool.setuptools.package-data]
+kdp_metadata_checker = ["rules/*.json"]
