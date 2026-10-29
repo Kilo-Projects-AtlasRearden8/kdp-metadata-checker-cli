@@ -10,17 +10,17 @@ A local-first Python CLI, `kdp-metadata-check`, that audits Kindle Direct Publis
 - `rules/kdp_rules.json` — default rules (no API keys, no network, fully editable locally).
 - `checker.py` — validation logic producing `Issue`/`CheckResult`/`Report` objects.
 - `report.py` — Markdown report renderer.
-- `cli.py` — argparse CLI (`--metadata`, `--title/--subtitle/--description/--categories/--keywords`, `--rules`, `--output`, `--format`); exit code 0 = pass, 1 = errors.
+- `cli.py` — argparse CLI (`--metadata`, `--title/--subtitle/--description/--categories/--keywords`, `--rules`, `--output`, `--format`, `--version`); exit code 0 = pass, 1 = errors.
 - `__main__.py` — `python3 -m kdp_metadata_checker` entry point.
 
 **Checks implemented:**
 - Title/subtitle/description: required, min/max length, max words, trailing whitespace, multiple spaces, all-caps, leading/trailing punctuation.
-- Description: raw HTML tags, empty paragraphs.
+- Description: raw HTML tags, empty paragraphs (two or more consecutive blank lines).
 - Categories: max count (3), max length per item (120), empty items, duplicates, trailing whitespace.
 - Keywords: max count (7), max total bytes (500), max length per item (50), empty items, duplicates, repeated words, ASIN-like values.
 - Length-limit breaches are errors; style issues are warnings. Severity is configurable per check in the rules JSON.
 
-**Other files:** `pyproject.toml` (setuptools, console script `kdp-metadata-check`, package data includes rules JSON), `LICENSE` (MIT), `README.md`, `tests/` (pytest), `examples/sample_metadata.json`.
+**Other files:** `pyproject.toml` (setuptools, console script `kdp-metadata-check`, package data includes rules JSON), `LICENSE` (MIT), `README.md`, `tests/` (pytest), `examples/sample_metadata.json`, `.gitignore`.
 
 ## How to run
 
@@ -42,8 +42,8 @@ Exit code: 0 when no errors, 1 when errors found. Warnings do not affect the exi
 
 ## Verification results
 
-- Tests: **27 passed** (`python3 -m pytest`) covering validation logic, Markdown rendering, and CLI behavior (exit codes, output file).
-- CLI smoke runs: sample metadata passes with 1 warning; deliberately bad metadata exits 1 with errors and warnings listed in the report.
+- Tests: **40 passed** (`python3 -m pytest`) covering validation logic, Markdown rendering, and CLI behavior (exit codes, output file, custom rules, error handling).
+- CLI smoke runs: sample metadata passes with 1 warning; deliberately bad metadata exits 1 with errors and warnings listed in the report; `--version` and `--help` work.
 - Build: `pip wheel --no-deps --no-build-isolation` succeeds; wheel includes `rules/kdp_rules.json`.
 
 No lint/typecheck tooling is configured in the project.
@@ -53,7 +53,6 @@ No lint/typecheck tooling is configured in the project.
 - Only Markdown report format supported (`--format markdown` is the only choice).
 - Rules are field-level only; no cross-field rules (e.g., title + subtitle combined length).
 - Description checks are basic (no HTML well-formedness validation).
-- No test coverage for the `--rules` custom path override or for installation in restricted/PEP 668 environments.
 - `pip install -e .` requires `--break-system-packages` on this host due to PEP 668; not a code defect.
 
 ## Attribution

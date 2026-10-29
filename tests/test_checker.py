@@ -168,3 +168,66 @@ def test_missing_rule_does_not_crash():
     report = check_metadata(metadata, rules)
     assert report.passed
     assert report.errors == []
+
+
+def test_single_blank_line_is_not_empty_paragraph():
+    """A single blank line between paragraphs is normal Markdown and should not flag."""
+    metadata = BookMetadata(title="The Massive AI Manual", description="First paragraph.\n\nSecond paragraph.")
+    report = check_metadata(metadata, RULES)
+    assert report.passed
+    assert not any(issue.check == "empty_paragraphs" for issue in report.warnings)
+
+
+def test_double_blank_line_is_empty_paragraph():
+    metadata = BookMetadata(title="The Massive AI Manual", description="First paragraph.\n\n\nSecond paragraph.")
+    report = check_metadata(metadata, RULES)
+    assert any(issue.check == "empty_paragraphs" for issue in report.warnings)
+
+
+def test_max_words_error():
+    metadata = BookMetadata(title=" ".join(["word"] * 101))
+    report = check_metadata(metadata, RULES)
+    assert not report.passed
+    assert any(issue.check == "max_words" for issue in report.errors)
+
+
+def test_min_length_warning():
+    rules = Rules.load("kdp_metadata_checker/rules/kdp_rules.json")
+    rules.fields["title"].min_length = 10
+    metadata = BookMetadata(title="ab")
+    report = check_metadata(metadata, rules)
+    assert any(issue.check == "min_length" for issue in report.warnings)
+
+
+def test_categories_empty_item_warning():
+    metadata = BookMetadata(title="The Massive AI Manual", categories=["Computers", ""])
+    report = check_metadata(metadata, RULES)
+    assert any(issue.check == "empty_items" for issue in report.warnings)
+
+
+def test_keywords_empty_item_warning():
+    metadata = BookMetadata(title="The Massive AI Manual", keywords=["ai", ""])
+    report = check_metadata(metadata, RULES)
+    assert any(issue.check == "empty_items" for issue in report.warnings)
+
+
+def test_custom_rules_override():
+    """A custom rules file changes the enforced limits."""
+    import json
+    import tempfile
+
+    custom = {
+        "title": {"max_length": 10, "checks": []},
+        "subtitle": {"max_length": 10, "checks": []},
+        "description": {"max_length": 10, "checks": []},
+        "categories": {"max_count": 1, "max_length_per": 10, "checks": []},
+        "keywords": {"max_count": 1, "max_length_per": 10, "max_total_bytes": 10, "checks": []},
+    }
+    with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as handle:
+        json.dump(custom, handle)
+        path = handle.name
+    rules = Rules.load(path)
+    metadata = BookMetadata(title="x" * 5)
+    assert check_metadata(metadata, rules).passed
+    metadata = BookMetadata(title="x" * 11)
+    assert not check_metadata(metadata, rules).passed

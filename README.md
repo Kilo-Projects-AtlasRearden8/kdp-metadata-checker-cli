@@ -1,6 +1,6 @@
 # KDP Metadata Checker
 
-Local-first command-line tool that checks Kindle Direct Publishing (KDP) book
+A local-first command-line tool that audits Kindle Direct Publishing (KDP) book
 metadata — title, subtitle, description, categories, and keywords — for common
 issues and length limits. No API keys, no network access, no personal data.
 
@@ -15,7 +15,7 @@ pip install kdp-metadata-check
 Or run directly from source:
 
 ```bash
-python -m kdp_metadata_checker --help
+python3 -m kdp_metadata_checker --help
 ```
 
 ## Usage
@@ -43,6 +43,35 @@ Write the Markdown report to a file:
 kdp-metadata-check --metadata book.json --output report.md
 ```
 
+## Report
+
+The tool prints a Markdown report with a summary and per-field issue lists. Exit
+code is 0 when no errors are found and 1 when errors are found; warnings do not
+change the exit code.
+
+```
+# KDP Metadata Check Report
+
+## Summary
+
+- Fields checked: 5
+- Errors: 2
+- Warnings: 3
+- Overall: FAIL
+
+## Title
+
+- [WARNING] all_caps: is written in all capital letters.
+
+## Categories
+
+- [ERROR] max_count: has 4 items; the maximum is 3.
+
+## Keywords
+
+- [ERROR] max_count: has 8 items; the maximum is 7.
+```
+
 ## Rules
 
 Validation rules live in `kdp_metadata_checker/rules/kdp_rules.json`, a local JSON
@@ -59,12 +88,8 @@ Limits enforced by default:
 Common issues flagged: trailing whitespace, multiple spaces, all-caps text,
 leading or trailing punctuation, raw HTML tags, empty paragraphs, empty or
 duplicate items, repeated words across keywords, and ASIN-like keyword values.
-
-## Report
-
-The tool prints a Markdown report with a summary and per-field issue lists.
-Exit code is 0 when no errors are found and 1 when errors are found; warnings
-do not change the exit code.
+Length-limit breaches are errors; style issues are warnings. Severity is
+configurable per check in the rules JSON.
 
 ## License
 

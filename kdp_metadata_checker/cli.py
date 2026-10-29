@@ -6,6 +6,7 @@ import json
 import sys
 from pathlib import Path
 
+from . import __version__
 from .checker import check_metadata
 from .metadata import BookMetadata
 from .report import render_markdown
@@ -24,6 +25,7 @@ def build_parser() -> argparse.ArgumentParser:
             "for common issues and length limits. Local-first; no API keys required."
         ),
     )
+    parser.add_argument("--version", action="version", version=f"kdp-metadata-check {__version__}")
     parser.add_argument("--metadata", help="Path to a JSON file containing book metadata")
     parser.add_argument("--title", default="", help="Book title")
     parser.add_argument("--subtitle", default="", help="Book subtitle")
@@ -41,15 +43,35 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _load_metadata(path: str) -> BookMetadata:
+    try:
+        data = json.loads(Path(path).read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        raise SystemExit(f"error: metadata file not found: {path}")
+    except json.JSONDecodeError as exc:
+        raise SystemExit(f"error: metadata file is not valid JSON: {path} ({exc})")
+    if not isinstance(data, dict):
+        raise SystemExit(f"error: metadata file must contain a JSON object: {path}")
+    return BookMetadata.from_dict(data)
+
+
+def _load_rules(path: str | None) -> Rules:
+    rules_path = path or str(Path(__file__).resolve().parent / "rules" / "kdp_rules.json")
+    try:
+        return Rules.load(rules_path)
+    except FileNotFoundError:
+        raise SystemExit(f"error: rules file not found: {rules_path}")
+    except json.JSONDecodeError as exc:
+        raise SystemExit(f"error: rules file is not valid JSON: {rules_path} ({exc})")
+
+
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
 
-    rules_path = args.rules or str(Path(__file__).resolve().parent / "rules" / "kdp_rules.json")
-    rules = Rules.load(rules_path)
+    rules = _load_rules(args.rules)
 
     if args.metadata:
-        data = json.loads(Path(args.metadata).read_text(encoding="utf-8"))
-        metadata = BookMetadata.from_dict(data)
+        metadata = _load_metadata(args.metadata)
     else:
         metadata = BookMetadata(
             title=args.title,

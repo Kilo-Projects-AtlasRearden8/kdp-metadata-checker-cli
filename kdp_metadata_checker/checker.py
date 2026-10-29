@@ -11,7 +11,7 @@ from .rules import FieldRule, Rules
 _PUNCTUATION = set("!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~")
 _WHITESPACE_LINE = re.compile(r"[ \t]+$", re.MULTILINE)
 _HTML_TAG = re.compile(r"<[^>]+>")
-_BLANK_PARAGRAPH = re.compile(r"^[ \t]*$")
+_BLANK_PARAGRAPH_RUN = re.compile(r"\n[ \t]*\n[ \t]*\n")
 _ASIN_LIKE = re.compile(r"^B0[A-Z0-9]{8}$", re.IGNORECASE)
 
 
@@ -140,10 +140,19 @@ def _check_named_checks(value: str, rule: FieldRule) -> list[Issue]:
                 issues.append(_issue(rule.name, "leading_trailing_punctuation", "starts or ends with punctuation.", severity))
         elif name == "raw_html_tags":
             if _HTML_TAG.search(value):
-                issues.append(_issue(rule.name, "raw_html_tags", "contains raw HTML tags.", severity))
+                issues.append(
+                    _issue(
+                        rule.name,
+                        "raw_html_tags",
+                        "contains HTML tags. KDP supports basic HTML in descriptions, but verify the markup renders correctly.",
+                        severity,
+                    )
+                )
         elif name == "empty_paragraphs":
-            if any(_BLANK_PARAGRAPH.match(line) for line in value.splitlines()):
-                issues.append(_issue(rule.name, "empty_paragraphs", "contains empty paragraphs.", severity))
+            if _BLANK_PARAGRAPH_RUN.search(value):
+                issues.append(
+                    _issue(rule.name, "empty_paragraphs", "contains two or more consecutive blank lines.", severity)
+                )
     return issues
 
 
